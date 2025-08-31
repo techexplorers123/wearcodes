@@ -1,9 +1,4 @@
-<<<<<<< HEAD
 # wearcodes
-=======
-# warecodes
->>>>>>> 00c4de57b0457dd37f4fe0cd11b9dcc91c68bf7d
-
 A new Flutter project.
 
 ## Getting Started
