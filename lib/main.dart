@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wear/wear.dart';
+import 'package:barcode_widget/barcode_widget.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,25 +16,39 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         colorScheme: const ColorScheme.dark(
           primary: Colors.white24,
-          onBackground: Colors.white10,
           onSurface: Colors.white10,
         ),
       ),
-      home: main_page(),
+      home: MainPage(),
     );
   }
 }
 
-class main_page extends StatelessWidget {
-  const main_page({super.key});
+class MainPage extends StatelessWidget {
+  const MainPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return WatchShape(
       builder: (context, shape, child) {
-        return const Scaffold(
+        return Scaffold(
           body: Center(
-            child: Text("Hello World", style: TextStyle(fontSize: 20)),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "qr1",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                BarcodeWidget(
+                  data: "2349",
+                  barcode: Barcode.code39(),
+                  width: 200,
+                  height: 80,
+                ),
+              ],
+            ),
           ),
         );
       },
