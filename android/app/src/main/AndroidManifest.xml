@@ -1,5 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    package="com.example.veryGoodCore">
++  <uses-feature android:name="android.hardware.type.watch" />
     <application
+        <meta-data
+            android:name="com.google.android.wearable.standalone"
+            android:value="true" />
         android:label="warecodes"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
