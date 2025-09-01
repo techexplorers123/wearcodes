@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wear_plus/wear_plus.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:wearable_rotary/wearable_rotary.dart';
@@ -37,7 +38,7 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  final List<String> codes = ["2349", "5678", "9012", "3456"];
+  List<String> codes = [];
   int selectedIndex = 0;
   late final StreamSubscription<RotaryEvent> _rotarySubscription;
   bool isClockwise = true;
@@ -49,6 +50,20 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     _rotarySubscription = rotaryEvents.listen(handleRotaryEvent);
+    _loadCodes();
+  }
+
+  Future<void> _loadCodes() async {
+    final prefs = await SharedPreferences.getInstance();
+    final storedCodes = prefs.getStringList('codes');
+    if (storedCodes != null && storedCodes.isNotEmpty) {
+      setState(() => codes = storedCodes);
+    }
+  }
+
+  Future<void> _saveCodes() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('codes', codes);
   }
 
   void handleRotaryEvent(RotaryEvent event) {
@@ -132,11 +147,47 @@ class _MainPageState extends State<MainPage> {
                             curve: Curves.easeOut,
                             child: Column(
                               children: [
-                                Text(
-                                  "qr$selectedIndex",
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                                GestureDetector(
+                                  onLongPress: () async {
+                                    final confirm = await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text("Delete Code?"),
+                                        content: Text(
+                                          "Do you want to delete code: ${codes[selectedIndex]}?",
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, false),
+                                            child: const Text("Cancel"),
+                                          ),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, true),
+                                            child: const Text("Delete"),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    if (confirm == true) {
+                                      setState(() {
+                                        codes.removeAt(selectedIndex);
+                                        if (selectedIndex >= codes.length) {
+                                          selectedIndex = codes.length - 1;
+                                        }
+                                      });
+                                      await _saveCodes(); // persist changes
+                                      HapticFeedback.mediumImpact();
+                                    }
+                                  },
+                                  child: Text(
+                                    "qr$selectedIndex",
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -232,6 +283,7 @@ class _MainPageState extends State<MainPage> {
                                   codes.add(newCode);
                                   selectedIndex = codes.length - 1;
                                 });
+                                await _saveCodes();
                                 HapticFeedback.mediumImpact();
                               }
                             },
