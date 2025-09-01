@@ -207,11 +207,47 @@ class _MainPageState extends State<MainPage> {
                         else
                           Column(
                             children: [
-                              Text(
-                                "qr$selectedIndex",
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                              GestureDetector(
+                                onLongPress: () async {
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text("Delete Code?"),
+                                      content: Text(
+                                        "Do you want to delete code: ${codes[selectedIndex]}?",
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                          child: const Text("Cancel"),
+                                        ),
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, true),
+                                          child: const Text("Delete"),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (confirm == true) {
+                                    setState(() {
+                                      codes.removeAt(selectedIndex);
+                                      if (selectedIndex >= codes.length) {
+                                        selectedIndex = codes.length - 1;
+                                      }
+                                    });
+                                    await _saveCodes(); // persist changes
+                                    HapticFeedback.mediumImpact();
+                                  }
+                                },
+                                child: Text(
+                                  "qr$selectedIndex",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 8),
