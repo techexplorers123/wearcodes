@@ -105,6 +105,108 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
+  Future<void> _handleAddCode() async {
+    final controller = TextEditingController();
+    final newCode = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Add Code"),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLength: 20,
+          decoration: const InputDecoration(
+            hintText: "Enter code",
+            counterText: "",
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              if (controller.text.trim().isNotEmpty) {
+                Navigator.pop(context, controller.text.trim());
+              }
+            },
+            child: const Text("Add"),
+          ),
+        ],
+      ),
+    );
+
+    if (newCode != null) {
+      setState(() {
+        codes.add(newCode);
+        selectedIndex = codes.length - 1;
+      });
+      await _saveCodes();
+      HapticFeedback.mediumImpact();
+    }
+  }
+
+  Future<void> _handleDeleteCode(int index) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Delete Code?"),
+        content: Text("Do you want to delete code: ${codes[index]}?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Delete"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      setState(() {
+        codes.removeAt(index);
+        if (selectedIndex >= codes.length) selectedIndex = codes.length - 1;
+      });
+      await _saveCodes();
+      HapticFeedback.mediumImpact();
+    }
+  }
+
+  Widget _buildCodeItem(int index) {
+    final bounce = index == 0 ? bounceFirst : false;
+    return AnimatedScale(
+      scale: bounce ? 1.2 : 1.0,
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.easeOut,
+      child: Column(
+        children: [
+          GestureDetector(
+            onLongPress: () => _handleDeleteCode(index),
+            child: Text(
+              "qr$index",
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(height: 8),
+          BarcodeWidget(
+            data: codes[index],
+            barcode: Barcode.code39(),
+            width: 180,
+            height: 60,
+            backgroundColor: Colors.black,
+            margin: const EdgeInsets.all(8),
+            color: Colors.white,
+            drawText: false,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _rotarySubscription.cancel();
@@ -125,8 +227,8 @@ class _MainPageState extends State<MainPage> {
                   transitionBuilder: (child, animation) {
                     final offsetAnimation = Tween<Offset>(
                       begin: isClockwise
-                          ? const Offset(1.0, 0.0) // from right
-                          : const Offset(-1.0, 0.0), // from left
+                          ? const Offset(1, 0)
+                          : const Offset(-1, 0),
                       end: Offset.zero,
                     ).animate(animation);
 
@@ -138,195 +240,26 @@ class _MainPageState extends State<MainPage> {
                   child: Column(
                     key: ValueKey<int>(selectedIndex),
                     children: [
-                      if (selectedIndex < codes.length) ...[
-                        // First code with bounce
-                        if (selectedIndex == 0)
-                          AnimatedScale(
-                            scale: bounceFirst ? 1.2 : 1.0,
-                            duration: const Duration(milliseconds: 150),
-                            curve: Curves.easeOut,
-                            child: Column(
-                              children: [
-                                GestureDetector(
-                                  onLongPress: () async {
-                                    final confirm = await showDialog<bool>(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: const Text("Delete Code?"),
-                                        content: Text(
-                                          "Do you want to delete code: ${codes[selectedIndex]}?",
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, false),
-                                            child: const Text("Cancel"),
-                                          ),
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, true),
-                                            child: const Text("Delete"),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-
-                                    if (confirm == true) {
-                                      setState(() {
-                                        codes.removeAt(selectedIndex);
-                                        if (selectedIndex >= codes.length) {
-                                          selectedIndex = codes.length - 1;
-                                        }
-                                      });
-                                      await _saveCodes(); // persist changes
-                                      HapticFeedback.mediumImpact();
-                                    }
-                                  },
-                                  child: Text(
-                                    "qr$selectedIndex",
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                      if (selectedIndex < codes.length)
+                        _buildCodeItem(selectedIndex)
+                      else
+                        Column(
+                          children: [
+                            AnimatedScale(
+                              scale: bounceAdd ? 1.2 : 1.0,
+                              duration: const Duration(milliseconds: 150),
+                              curve: Curves.easeOut,
+                              child: IconButton(
+                                icon: const Icon(
+                                  Icons.add_circle_outline,
+                                  size: 40,
                                 ),
-                                const SizedBox(height: 8),
-                                BarcodeWidget(
-                                  data: codes[selectedIndex],
-                                  barcode: Barcode.code39(),
-                                  width: 180,
-                                  height: 60,
-                                  backgroundColor: Colors.black,
-                                  margin: const EdgeInsets.all(8),
-                                  color: Colors.white,
-                                  drawText: false,
-                                ),
-                              ],
-                            ),
-                          )
-                        else
-                          Column(
-                            children: [
-                              GestureDetector(
-                                onLongPress: () async {
-                                  final confirm = await showDialog<bool>(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text("Delete Code?"),
-                                      content: Text(
-                                        "Do you want to delete code: ${codes[selectedIndex]}?",
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context, false),
-                                          child: const Text("Cancel"),
-                                        ),
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context, true),
-                                          child: const Text("Delete"),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-
-                                  if (confirm == true) {
-                                    setState(() {
-                                      codes.removeAt(selectedIndex);
-                                      if (selectedIndex >= codes.length) {
-                                        selectedIndex = codes.length - 1;
-                                      }
-                                    });
-                                    await _saveCodes(); // persist changes
-                                    HapticFeedback.mediumImpact();
-                                  }
-                                },
-                                child: Text(
-                                  "qr$selectedIndex",
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                onPressed: _handleAddCode,
                               ),
-                              const SizedBox(height: 8),
-                              BarcodeWidget(
-                                data: codes[selectedIndex],
-                                barcode: Barcode.code39(),
-                                width: 180,
-                                height: 60,
-                                backgroundColor: Colors.black,
-                                margin: const EdgeInsets.all(8),
-                                color: Colors.white,
-                                drawText: false,
-                              ),
-                            ],
-                          ),
-                      ] else ...[
-                        // Add button with bounce
-                        AnimatedScale(
-                          scale: bounceAdd ? 1.2 : 1.0,
-                          duration: const Duration(milliseconds: 150),
-                          curve: Curves.easeOut,
-                          child: IconButton(
-                            icon: const Icon(
-                              Icons.add_circle_outline,
-                              size: 40,
                             ),
-                            onPressed: () async {
-                              final TextEditingController controller =
-                                  TextEditingController();
-
-                              final String? newCode = await showDialog<String>(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    title: Text("Add Code"),
-                                    content: TextField(
-                                      controller: controller,
-                                      autofocus: true,
-                                      maxLength: 20,
-                                      decoration: InputDecoration(
-                                        hintText: "Enter code",
-                                        counterText: "",
-                                      ),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: Text("Cancel"),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          if (controller.text
-                                              .trim()
-                                              .isNotEmpty) {
-                                            Navigator.pop(
-                                              context,
-                                              controller.text.trim(),
-                                            );
-                                          }
-                                        },
-                                        child: Text("Add"),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                              if (newCode != null) {
-                                setState(() {
-                                  codes.add(newCode);
-                                  selectedIndex = codes.length - 1;
-                                });
-                                await _saveCodes();
-                                HapticFeedback.mediumImpact();
-                              }
-                            },
-                          ),
+                            const Text("Add new code"),
+                          ],
                         ),
-                        const Text("Add new code"),
-                      ],
                     ],
                   ),
                 ),
