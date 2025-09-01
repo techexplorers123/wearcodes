@@ -37,6 +37,7 @@ dependencies:
   wear_plus: ^1.2.3
   wearable_rotary: ^2.0.2
   barcode_widget: ^2.0.4
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:
