@@ -121,58 +121,21 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> _handleAddCode() async {
-    final nameController = TextEditingController();
-    final codeController = TextEditingController();
-
-    final newCode = await showDialog<Map<String, String>>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Add Code"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(hintText: "Enter name"),
-              maxLength: 20,
-            ),
-            TextField(
-              controller: codeController,
-              decoration: const InputDecoration(hintText: "Enter code"),
-              maxLength: 20,
-            ),
-          ],
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddCodePage(
+          onAdd: (newCode) async {
+            setState(() {
+              codes.add(newCode);
+              selectedIndex = codes.length - 1;
+            });
+            await _saveCodes();
+            HapticFeedback.mediumImpact();
+          },
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () {
-              if (codeController.text.trim().isNotEmpty) {
-                Navigator.pop(context, {
-                  "name": nameController.text.trim(),
-                  "code": codeController.text.trim(),
-                });
-              }
-            },
-            child: const Text("Okay"),
-          ),
-        ],
       ),
     );
-
-    if (newCode != null) {
-      setState(() {
-        codes.add(newCode);
-        selectedIndex = codes.length - 1;
-      });
-      await _saveCodes();
-      HapticFeedback.mediumImpact();
-    }
-    nameController.dispose();
-    codeController.dispose();
   }
 
   Future<void> _handleDeleteCode(int index) async {
@@ -265,42 +228,38 @@ class _MainPageState extends State<MainPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
-          "Add New Code",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 16),
         AnimatedScale(
           scale: bounceAdd ? 1.15 : 1.0,
           duration: const Duration(milliseconds: 150),
           curve: Curves.easeOut,
-          child: GestureDetector(
-            onTap: _handleAddCode,
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.white.withValues(alpha: 0.4),
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                  ),
-                ],
+          child: Column(
+            children: [
+              const Text(
+                "Add New Code",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-              child: const Icon(
-                Icons.add,
-                size: 40,
-                color: Colors.black,
-                semanticLabel: "add",
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _handleAddCode,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  shape: const CircleBorder(),
+                  padding: const EdgeInsets.all(24),
+                  elevation: 8,
+                  shadowColor: Colors.white24,
+                ),
+                child: const Icon(
+                  Icons.add,
+                  size: 40,
+                  color: Colors.black,
+                  semanticLabel: "add",
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ],
@@ -344,6 +303,76 @@ class _MainPageState extends State<MainPage> {
                 ? _buildCodeCard(selectedIndex)
                 : _buildAddCard(),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class AddCodePage extends StatefulWidget {
+  final Function(Map<String, String>) onAdd;
+  const AddCodePage({required this.onAdd, super.key});
+
+  @override
+  State<AddCodePage> createState() => _AddCodePageState();
+}
+
+class _AddCodePageState extends State<AddCodePage> {
+  final nameController = TextEditingController();
+  final codeController = TextEditingController();
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    codeController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                hintText: "Enter name",
+                filled: true,
+                fillColor: Colors.white10,
+              ),
+              style: const TextStyle(color: Colors.white),
+              autofocus: false,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: codeController,
+              decoration: const InputDecoration(
+                hintText: "Enter code",
+                filled: true,
+                fillColor: Colors.white10,
+              ),
+              style: const TextStyle(color: Colors.white),
+              maxLength: 20,
+              autofocus: false,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                if (codeController.text.trim().isNotEmpty) {
+                  widget.onAdd({
+                    "name": nameController.text.trim(),
+                    "code": codeController.text.trim(),
+                  });
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text("Add"),
+            ),
+          ],
         ),
       ),
     );
