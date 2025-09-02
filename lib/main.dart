@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wear_plus/wear_plus.dart';
@@ -38,13 +39,12 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  List<String> codes = [];
+  List<Map<String, String>> codes = [];
   int selectedIndex = 0;
   late final StreamSubscription<RotaryEvent> _rotarySubscription;
   bool isClockwise = true;
-  bool bounceAdd = false;
   bool bounceFirst = false;
-
+  bool bounceAdd = false;
   @override
   void initState() {
     super.initState();
@@ -54,13 +54,19 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _loadCodes() async {
     final prefs = await SharedPreferences.getInstance();
-    final storedCodes = prefs.getStringList('codes');
-    if (storedCodes != null) setState(() => codes = storedCodes);
+    final stored = prefs.getStringList('codes');
+    if (stored != null) {
+      setState(() {
+        codes = stored
+            .map((s) => Map<String, String>.from(jsonDecode(s)))
+            .toList();
+      });
+    }
   }
 
   Future<void> _saveCodes() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('codes', codes);
+    await prefs.setStringList('codes', codes.map(jsonEncode).toList());
   }
 
   void _handleRotary(RotaryEvent event) {
@@ -72,8 +78,7 @@ class _MainPageState extends State<MainPage> {
           isClockwise = true;
           HapticFeedback.selectionClick();
         } else {
-          _triggerBounceAdd();
-          HapticFeedback.heavyImpact();
+          _triggerBounce(isAddCard: true);
         }
       } else {
         if (selectedIndex > 0) {
@@ -81,41 +86,62 @@ class _MainPageState extends State<MainPage> {
           isClockwise = false;
           HapticFeedback.selectionClick();
         } else {
-          _triggerBounceFirst();
-          HapticFeedback.heavyImpact();
+          _triggerBounce(isAddCard: false);
         }
       }
     });
   }
 
-  void _triggerBounceAdd() {
-    setState(() => bounceAdd = true);
-    Future.delayed(const Duration(milliseconds: 150), () {
-      if (mounted) setState(() => bounceAdd = false);
-    });
-  }
+  void _triggerBounce({required bool isAddCard}) {
+    if (mounted) {
+      setState(() {
+        if (isAddCard) {
+          bounceAdd = false; // reset immediately
+          bounceAdd = true; // start new bounce
+        } else {
+          bounceFirst = false;
+          bounceFirst = true;
+        }
+      });
+    }
 
-  void _triggerBounceFirst() {
-    setState(() => bounceFirst = true);
+    HapticFeedback.heavyImpact();
+
     Future.delayed(const Duration(milliseconds: 150), () {
-      if (mounted) setState(() => bounceFirst = false);
+      if (mounted) {
+        setState(() {
+          if (isAddCard) {
+            bounceAdd = false;
+          } else {
+            bounceFirst = false;
+          }
+        });
+      }
     });
   }
 
   Future<void> _handleAddCode() async {
-    final controller = TextEditingController();
-    final newCode = await showDialog<String>(
+    final nameController = TextEditingController();
+    final codeController = TextEditingController();
+
+    final newCode = await showDialog<Map<String, String>>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Add Code"),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLength: 20,
-          decoration: const InputDecoration(
-            hintText: "Enter code",
-            counterText: "",
-          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(hintText: "Enter name"),
+              maxLength: 20,
+            ),
+            TextField(
+              controller: codeController,
+              decoration: const InputDecoration(hintText: "Enter code"),
+              maxLength: 20,
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -124,11 +150,14 @@ class _MainPageState extends State<MainPage> {
           ),
           TextButton(
             onPressed: () {
-              if (controller.text.trim().isNotEmpty) {
-                Navigator.pop(context, controller.text.trim());
+              if (codeController.text.trim().isNotEmpty) {
+                Navigator.pop(context, {
+                  "name": nameController.text.trim(),
+                  "code": codeController.text.trim(),
+                });
               }
             },
-            child: const Text("Add"),
+            child: const Text("Okay"),
           ),
         ],
       ),
@@ -142,6 +171,8 @@ class _MainPageState extends State<MainPage> {
       await _saveCodes();
       HapticFeedback.mediumImpact();
     }
+    nameController.dispose();
+    codeController.dispose();
   }
 
   Future<void> _handleDeleteCode(int index) async {
@@ -149,7 +180,7 @@ class _MainPageState extends State<MainPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Delete Code?"),
-        content: Text("Do you want to delete code: ${codes[index]}?"),
+        content: Text("Do you want to delete code: ${codes[index]['name']}?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -174,13 +205,11 @@ class _MainPageState extends State<MainPage> {
   }
 
   Widget _buildCodeCard(int index) {
-    final bounce = index == 0 ? bounceFirst : false;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         AnimatedScale(
-          scale: bounce ? 1.2 : 1.0,
+          scale: bounceFirst ? 1.2 : 1.0,
           duration: const Duration(milliseconds: 150),
           child: GestureDetector(
             onLongPress: () => _handleDeleteCode(index),
@@ -196,7 +225,7 @@ class _MainPageState extends State<MainPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      "qr$index",
+                      codes[index]["name"] ?? "Unnamed",
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -205,7 +234,7 @@ class _MainPageState extends State<MainPage> {
                     ),
                     const SizedBox(height: 12),
                     BarcodeWidget(
-                      data: codes[index],
+                      data: codes[index]["code"] ?? "",
                       barcode: Barcode.code39(),
                       width: 180,
                       height: 60,
@@ -220,7 +249,6 @@ class _MainPageState extends State<MainPage> {
           ),
         ),
         const SizedBox(height: 8),
-        // Position indicator inside the card
         Text(
           "${index + 1} / ${codes.length}",
           style: const TextStyle(
@@ -260,13 +288,18 @@ class _MainPageState extends State<MainPage> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.white.withOpacity(0.4),
+                    color: Colors.white.withValues(alpha: 0.4),
                     blurRadius: 10,
                     spreadRadius: 2,
                   ),
                 ],
               ),
-              child: const Icon(Icons.add, size: 40, color: Colors.black),
+              child: const Icon(
+                Icons.add,
+                size: 40,
+                color: Colors.black,
+                semanticLabel: "add",
+              ),
             ),
           ),
         ),
@@ -283,29 +316,36 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return WatchShape(
-      builder: (context, shape, child) {
-        return Scaffold(
-          backgroundColor: Colors.black,
-          body: Center(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 350),
-              transitionBuilder: (child, animation) {
-                final offsetAnimation = Tween<Offset>(
-                  begin: isClockwise ? const Offset(1, 0) : const Offset(-1, 0),
-                  end: Offset.zero,
-                ).animate(animation);
-                return SlideTransition(
-                  position: offsetAnimation,
+      builder: (context, shape, child) => Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 350),
+            transitionBuilder: (child, animation) {
+              final offsetAnimation = Tween<Offset>(
+                begin: isClockwise ? const Offset(1, 0) : const Offset(-1, 0),
+                end: Offset.zero,
+              ).animate(animation);
+
+              final scaleAnimation = Tween<double>(begin: 0.95, end: 1.0)
+                  .animate(
+                    CurvedAnimation(parent: animation, curve: Curves.easeOut),
+                  );
+
+              return SlideTransition(
+                position: offsetAnimation,
+                child: ScaleTransition(
+                  scale: scaleAnimation,
                   child: FadeTransition(opacity: animation, child: child),
-                );
-              },
-              child: selectedIndex < codes.length
-                  ? _buildCodeCard(selectedIndex)
-                  : _buildAddCard(),
-            ),
+                ),
+              );
+            },
+            child: selectedIndex < codes.length
+                ? _buildCodeCard(selectedIndex)
+                : _buildAddCard(),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

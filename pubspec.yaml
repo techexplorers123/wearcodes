@@ -1,5 +1,5 @@
 name: wearcodes
-description: "A new Flutter project."
+description: "Store and view your QR/barcode codes easily on your smartwatch."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -47,5 +47,4 @@ flutter:
 
 flutter_launcher_icons:
   android: true
-  ios: true
   image_path: "assets/icon.png"
