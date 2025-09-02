@@ -228,42 +228,38 @@ class _MainPageState extends State<MainPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
-          "Add New Code",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 16),
         AnimatedScale(
           scale: bounceAdd ? 1.15 : 1.0,
           duration: const Duration(milliseconds: 150),
           curve: Curves.easeOut,
-          child: GestureDetector(
-            onTap: _handleAddCode,
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.white.withValues(alpha: 0.4),
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                  ),
-                ],
+          child: Column(
+            children: [
+              const Text(
+                "Add New Code",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-              child: const Icon(
-                Icons.add,
-                size: 40,
-                color: Colors.black,
-                semanticLabel: "add",
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _handleAddCode,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  shape: const CircleBorder(),
+                  padding: const EdgeInsets.all(24),
+                  elevation: 8,
+                  shadowColor: Colors.white24,
+                ),
+                child: const Icon(
+                  Icons.add,
+                  size: 40,
+                  color: Colors.black,
+                  semanticLabel: "add",
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ],
@@ -349,7 +345,7 @@ class _AddCodePageState extends State<AddCodePage> {
                 fillColor: Colors.white10,
               ),
               style: const TextStyle(color: Colors.white),
-              autofocus: true,
+              autofocus: false,
             ),
             const SizedBox(height: 12),
             TextField(
@@ -361,6 +357,7 @@ class _AddCodePageState extends State<AddCodePage> {
               ),
               style: const TextStyle(color: Colors.white),
               maxLength: 20,
+              autofocus: false,
             ),
             const SizedBox(height: 20),
             ElevatedButton(
