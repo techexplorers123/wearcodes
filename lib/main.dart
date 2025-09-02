@@ -20,8 +20,8 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.compact,
         useMaterial3: true,
         colorScheme: const ColorScheme.dark(
-          primary: Colors.white24,
-          onSurface: Colors.white10,
+          primary: Colors.black,
+          onSurface: Colors.white,
         ),
       ),
       home: const MainPage(),
@@ -42,23 +42,20 @@ class _MainPageState extends State<MainPage> {
   int selectedIndex = 0;
   late final StreamSubscription<RotaryEvent> _rotarySubscription;
   bool isClockwise = true;
-
   bool bounceAdd = false;
   bool bounceFirst = false;
 
   @override
   void initState() {
     super.initState();
-    _rotarySubscription = rotaryEvents.listen(handleRotaryEvent);
+    _rotarySubscription = rotaryEvents.listen(_handleRotary);
     _loadCodes();
   }
 
   Future<void> _loadCodes() async {
     final prefs = await SharedPreferences.getInstance();
     final storedCodes = prefs.getStringList('codes');
-    if (storedCodes != null && storedCodes.isNotEmpty) {
-      setState(() => codes = storedCodes);
-    }
+    if (storedCodes != null) setState(() => codes = storedCodes);
   }
 
   Future<void> _saveCodes() async {
@@ -66,7 +63,7 @@ class _MainPageState extends State<MainPage> {
     await prefs.setStringList('codes', codes);
   }
 
-  void handleRotaryEvent(RotaryEvent event) {
+  void _handleRotary(RotaryEvent event) {
     final totalItems = codes.length + 1;
     setState(() {
       if (event.direction == RotaryDirection.clockwise) {
@@ -75,8 +72,8 @@ class _MainPageState extends State<MainPage> {
           isClockwise = true;
           HapticFeedback.selectionClick();
         } else {
-          HapticFeedback.heavyImpact();
           _triggerBounceAdd();
+          HapticFeedback.heavyImpact();
         }
       } else {
         if (selectedIndex > 0) {
@@ -84,8 +81,8 @@ class _MainPageState extends State<MainPage> {
           isClockwise = false;
           HapticFeedback.selectionClick();
         } else {
-          HapticFeedback.heavyImpact();
           _triggerBounceFirst();
+          HapticFeedback.heavyImpact();
         }
       }
     });
@@ -176,34 +173,104 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
-  Widget _buildCodeItem(int index) {
+  Widget _buildCodeCard(int index) {
     final bounce = index == 0 ? bounceFirst : false;
-    return AnimatedScale(
-      scale: bounce ? 1.2 : 1.0,
-      duration: const Duration(milliseconds: 150),
-      curve: Curves.easeOut,
-      child: Column(
-        children: [
-          GestureDetector(
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AnimatedScale(
+          scale: bounce ? 1.2 : 1.0,
+          duration: const Duration(milliseconds: 150),
+          child: GestureDetector(
             onLongPress: () => _handleDeleteCode(index),
-            child: Text(
-              "qr$index",
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            child: Card(
+              color: Colors.grey[900],
+              elevation: 5,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "qr$index",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    BarcodeWidget(
+                      data: codes[index],
+                      barcode: Barcode.code39(),
+                      width: 180,
+                      height: 60,
+                      color: Colors.white,
+                      backgroundColor: Colors.black,
+                      drawText: false,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          BarcodeWidget(
-            data: codes[index],
-            barcode: Barcode.code39(),
-            width: 180,
-            height: 60,
-            backgroundColor: Colors.black,
-            margin: const EdgeInsets.all(8),
-            color: Colors.white,
-            drawText: false,
+        ),
+        const SizedBox(height: 8),
+        // Position indicator inside the card
+        Text(
+          "${index + 1} / ${codes.length}",
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.white70,
+            fontWeight: FontWeight.w500,
           ),
-        ],
-      ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAddCard() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text(
+          "Add New Code",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 16),
+        AnimatedScale(
+          scale: bounceAdd ? 1.15 : 1.0,
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+          child: GestureDetector(
+            onTap: _handleAddCode,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.white.withOpacity(0.4),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.add, size: 40, color: Colors.black),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -218,52 +285,23 @@ class _MainPageState extends State<MainPage> {
     return WatchShape(
       builder: (context, shape, child) {
         return Scaffold(
+          backgroundColor: Colors.black,
           body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 350),
-                  transitionBuilder: (child, animation) {
-                    final offsetAnimation = Tween<Offset>(
-                      begin: isClockwise
-                          ? const Offset(1, 0)
-                          : const Offset(-1, 0),
-                      end: Offset.zero,
-                    ).animate(animation);
-
-                    return SlideTransition(
-                      position: offsetAnimation,
-                      child: FadeTransition(opacity: animation, child: child),
-                    );
-                  },
-                  child: Column(
-                    key: ValueKey<int>(selectedIndex),
-                    children: [
-                      if (selectedIndex < codes.length)
-                        _buildCodeItem(selectedIndex)
-                      else
-                        Column(
-                          children: [
-                            AnimatedScale(
-                              scale: bounceAdd ? 1.2 : 1.0,
-                              duration: const Duration(milliseconds: 150),
-                              curve: Curves.easeOut,
-                              child: IconButton(
-                                icon: const Icon(
-                                  Icons.add_circle_outline,
-                                  size: 40,
-                                ),
-                                onPressed: _handleAddCode,
-                              ),
-                            ),
-                            const Text("Add new code"),
-                          ],
-                        ),
-                    ],
-                  ),
-                ),
-              ],
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 350),
+              transitionBuilder: (child, animation) {
+                final offsetAnimation = Tween<Offset>(
+                  begin: isClockwise ? const Offset(1, 0) : const Offset(-1, 0),
+                  end: Offset.zero,
+                ).animate(animation);
+                return SlideTransition(
+                  position: offsetAnimation,
+                  child: FadeTransition(opacity: animation, child: child),
+                );
+              },
+              child: selectedIndex < codes.length
+                  ? _buildCodeCard(selectedIndex)
+                  : _buildAddCard(),
             ),
           ),
         );
