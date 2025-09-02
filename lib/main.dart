@@ -20,6 +20,19 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         visualDensity: VisualDensity.compact,
         useMaterial3: true,
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: Colors.grey.shade400),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: Colors.blue, width: 2),
+          ),
+          filled: true,
+          fillColor: Colors.grey.shade100,
+        ),
         colorScheme: const ColorScheme.dark(
           primary: Colors.black,
           onSurface: Colors.white,
@@ -138,33 +151,25 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Future<void> _handleDeleteCode(int index) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Delete Code?"),
-        content: Text("Do you want to delete code: ${codes[index]['name']}?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text("Delete"),
-          ),
-        ],
+  Future<void> _handleDeleteCode() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => DeletePage(
+          name: codes[selectedIndex]["name"] ?? "Unnamed",
+          onConfirm: () async {
+            setState(() {
+              codes.removeAt(selectedIndex);
+              if (selectedIndex >= codes.length) {
+                selectedIndex = codes.length - 1;
+              }
+            });
+            await _saveCodes();
+            HapticFeedback.mediumImpact();
+          },
+        ),
       ),
     );
-
-    if (confirm == true) {
-      setState(() {
-        codes.removeAt(index);
-        if (selectedIndex >= codes.length) selectedIndex = codes.length - 1;
-      });
-      await _saveCodes();
-      HapticFeedback.mediumImpact();
-    }
   }
 
   Widget _buildCodeCard(int index) {
@@ -174,14 +179,17 @@ class _MainPageState extends State<MainPage> {
         AnimatedScale(
           scale: bounceFirst ? 1.2 : 1.0,
           duration: const Duration(milliseconds: 150),
-          child: GestureDetector(
-            onLongPress: () => _handleDeleteCode(index),
-            child: Card(
-              color: Colors.grey[900],
-              elevation: 5,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+          child: Card(
+            color: Colors.grey[900],
+            elevation: 5,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onLongPress: _handleDeleteCode,
+              splashColor: Colors.white24, // ripple color
+              highlightColor: Colors.white10, // optional subtle highlight
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -330,37 +338,33 @@ class _AddCodePageState extends State<AddCodePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
+    return WatchShape(
+      builder: (context, shape, child) => Scaffold(
+        backgroundColor: Colors.black,
+        body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(
-                hintText: "Enter name",
-                filled: true,
-                fillColor: Colors.white10,
-              ),
-              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(hintText: "Enter name"),
               autofocus: false,
+              maxLength: 20,
             ),
-            const SizedBox(height: 12),
+            // const SizedBox(height: 10),
             TextField(
               controller: codeController,
-              decoration: const InputDecoration(
-                hintText: "Enter code",
-                filled: true,
-                fillColor: Colors.white10,
-              ),
-              style: const TextStyle(color: Colors.white),
-              maxLength: 20,
+              decoration: InputDecoration(hintText: "Enter code"),
               autofocus: false,
+              maxLength: 20,
+              keyboardType: TextInputType.numberWithOptions(
+                decimal: false,
+                signed: false,
+              ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
+            const SizedBox(height: 10),
+            AppButton(
+              label: "Add",
+              backgroundColor: Colors.blue,
               onPressed: () {
                 if (codeController.text.trim().isNotEmpty) {
                   widget.onAdd({
@@ -370,10 +374,104 @@ class _AddCodePageState extends State<AddCodePage> {
                   Navigator.pop(context);
                 }
               },
-              child: const Text("Add"),
             ),
+            // const SizedBox(height: 5),
+            // AppButton(
+            //   label: "Cancel",
+            //   backgroundColor: Colors.grey[800]!,
+            //   onPressed: () => Navigator.pop(context),
+            // ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class DeletePage extends StatelessWidget {
+  final String name;
+  final VoidCallback onConfirm;
+
+  const DeletePage({super.key, required this.name, required this.onConfirm});
+
+  @override
+  Widget build(BuildContext context) {
+    return WatchShape(
+      builder: (context, shape, child) => Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Delete this code?",
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  name,
+                  style: const TextStyle(fontSize: 16, color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                AppButton(
+                  label: "Delete",
+                  autofocus: true,
+                  backgroundColor: Colors.red,
+                  onPressed: () {
+                    onConfirm();
+                    Navigator.pop(context);
+                  },
+                ),
+                const SizedBox(height: 12),
+                AppButton(
+                  label: "Cancel",
+                  backgroundColor: Colors.grey[800]!,
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class AppButton extends StatelessWidget {
+  final String label;
+  final Color backgroundColor;
+  final bool autofocus;
+  final VoidCallback onPressed;
+
+  const AppButton({
+    super.key,
+    required this.label,
+    required this.backgroundColor,
+    required this.onPressed,
+    this.autofocus = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        autofocus: autofocus,
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          backgroundColor: backgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        onPressed: onPressed,
+        child: Text(label),
       ),
     );
   }
