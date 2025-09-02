@@ -134,7 +134,7 @@ class _MainPageState extends State<MainPage> {
             TextField(
               controller: nameController,
               decoration: const InputDecoration(hintText: "Enter name"),
-              autofocus: true,
+              maxLength: 20,
             ),
             TextField(
               controller: codeController,
@@ -157,7 +157,7 @@ class _MainPageState extends State<MainPage> {
                 });
               }
             },
-            child: const Text("Add"),
+            child: const Text("Okay"),
           ),
         ],
       ),
@@ -294,7 +294,12 @@ class _MainPageState extends State<MainPage> {
                   ),
                 ],
               ),
-              child: const Icon(Icons.add, size: 40, color: Colors.black),
+              child: const Icon(
+                Icons.add,
+                size: 40,
+                color: Colors.black,
+                semanticLabel: "add",
+              ),
             ),
           ),
         ),
