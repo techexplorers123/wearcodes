@@ -15,7 +15,15 @@ A simple and efficient Flutter application for Wear OS that allows you to store 
 
 ## 📲 How It Looks
 
-*(Imagine a GIF here showing a user scrolling through different barcode cards on a smartwatch, then tapping to add a new one.)*
+| Main Screen | Add Screen |
+| :---: | :---: |
+| ![Barcode Tile](screenshots/barcode_tile.png) | ![Add Tile](screenshots/add_tile.png) |
+| *View your saved barcodes.* | *Scroll to the end to add a new one.* |
+
+| Add Dialog | Delete Dialog |
+| :---: | :---: |
+| ![Add Popup](screenshots/add_screen_popup.png) | ![Delete Popup](screenshots/delete_popup.png) |
+| *Enter a name and the code data.* | *Long-press a card to delete it.* |
 
 ## 🛠️ Tech Stack & Dependencies
 
