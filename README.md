@@ -27,34 +27,52 @@ A simple and efficient Flutter application for Wear OS that allows you to store 
   - `barcode_widget`: For generating the barcode images.
   - `shared_preferences`: For storing the barcode data locally on the device.
 
-## 🚀 Getting Started
+## 🚀 Installation & Setup
 
-To get a local copy up and running, follow these simple steps.
+There are two ways to get the app on your watch: by installing the official release or by building it yourself from the source code.
 
-### Prerequisites
+### For Users (Easy Install)
 
-- Flutter SDK installed. See [Flutter documentation](https://flutter.dev/docs/get-started/install) for instructions.
-- A Wear OS emulator set up in Android Studio or a physical Wear OS device.
+This method is recommended for most users. You will download the ready-to-install app file and sideload it onto your watch.
 
-### Installation
+1.  **Download the latest release:**
+    Go to the [GitHub Releases page](https://github.com/your_username/wearcodes/releases) and download the latest `.apk` file from the "Assets" section.
 
-1. **Clone the repo:**
-   ```sh
-   git clone https://github.com/your_username/wearcodes.git
-   ```
-2. **Navigate to the project directory:**
-   ```sh
-   cd wearcodes
-   ```
-3. **Install dependencies:**
-   ```sh
-   flutter pub get
-   ```
-4. **Run the app:**
-   Connect your Wear OS device or start an emulator, then run:
-   ```sh
-   flutter run
-   ```
+2.  **Sideload the APK to your watch:**
+    You will need to use a tool to install the APK file on your watch. This process is called "sideloading." It requires enabling developer options on your watch.
+
+    For a detailed, user-friendly guide, follow the instructions here: [How to Sideload Apps on Wear OS](https://www.howtogeek.com/792549/how-to-sideload-apps-on-wear-os/)
+
+### For Developers (Build from Source)
+
+This method is for developers who want to modify the code or build the app themselves.
+
+1.  **Set up Flutter:**
+    If you don't have Flutter installed, follow the official guide to get started: [Flutter Documentation](https://docs.flutter.dev/get-started/install).
+
+2.  **Clone the repository:**
+    ```sh
+    git clone https://github.com/your_username/wearcodes.git
+    cd wearcodes
+    ```
+
+3.  **Install dependencies:**
+    ```sh
+    flutter pub get
+    ```
+
+4.  **Run the app (Debug Mode):**
+    Connect your Wear OS device or start an emulator, then run:
+    ```sh
+    flutter run
+    ```
+
+5.  **Build the app (Release Mode):**
+    To build the release `.apk` file that you can install or distribute, run:
+    ```sh
+    flutter build apk --release
+    ```
+    The output file will be located in `build/app/outputs/flutter-apk/app-release.apk`.
 
 ## Usage
 
