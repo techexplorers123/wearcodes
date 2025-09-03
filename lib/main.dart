@@ -20,19 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         visualDensity: VisualDensity.compact,
         useMaterial3: true,
-        inputDecorationTheme: InputDecorationTheme(
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: Colors.grey.shade400),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: Colors.blue, width: 2),
-          ),
-          filled: true,
-          fillColor: Colors.grey.shade100,
-        ),
+        useSystemColors: true,
         colorScheme: const ColorScheme.dark(
           primary: Colors.black,
           onSurface: Colors.white,
@@ -117,9 +105,7 @@ class _MainPageState extends State<MainPage> {
         }
       });
     }
-
     HapticFeedback.heavyImpact();
-
     Future.delayed(const Duration(milliseconds: 150), () {
       if (mounted) {
         setState(() {
@@ -160,8 +146,8 @@ class _MainPageState extends State<MainPage> {
           onConfirm: () async {
             setState(() {
               codes.removeAt(selectedIndex);
-              if (selectedIndex >= codes.length) {
-                selectedIndex = codes.length - 1;
+              if (selectedIndex >= codes.length && selectedIndex > 1) {
+                selectedIndex--;
               }
             });
             await _saveCodes();
