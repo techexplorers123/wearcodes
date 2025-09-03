@@ -80,6 +80,16 @@ This method is for developers who want to modify the code or build the app thems
 - **Add a New Code:** Scroll to the very end of your list to find the "Add New Code" card and tap the `+` button.
 - **Delete a Code:** Long-press on any barcode card to bring up the delete confirmation screen.
 
+## 📝 To-Do
+
+Here are some ideas for future improvements:
+
+- [ ] Support more barcode formats (e.g., QR Code, Code 128).
+- [ ] Allow reordering the list of saved codes.
+- [ ] Add the ability to edit an existing code's name or data.
+- [ ] Improve UI/add theme options.
+- [ ] Investigate a companion phone app for easier code management.
+
 ## 📄 License
 
 Distributed under the GPLv3 License. See `LICENSE` for more information.
