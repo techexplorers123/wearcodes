@@ -40,6 +40,23 @@ jobs:
           git commit -m "Bump version to ${VERSION}+${BUILD_NUMBER}"
           git push
 
+      - name: Setup keystore
+        run: |
+            echo "$KEYSTORE_BASE64" | base64 --decode > ./android/release-key.jks
+        env:
+            KEYSTORE_BASE64: ${{secrets.KEYSTORE_BASE64}}
+
+      - name: Create key.properties
+        run: |
+            echo "storePassword=$KEYSTORE_PASSWORD" >> android/key.properties
+            echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+            echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+            echo "storeFile=../release-key.jks" >> android/key.properties
+        env:
+            KEYSTORE_PASSWORD: ${{secrets.KEYSTORE_PASSWORD}}
+            KEY_ALIAS: ${{secrets.KEY_ALIAS}}
+            KEY_PASSWORD: ${{secrets.KEYSTORE_PASSWORD}}
+
       - name: Build release APK
         run: flutter build apk --release
 
