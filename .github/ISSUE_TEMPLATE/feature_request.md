@@ -1,20 +1,21 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: feature request
 title: ''
 labels: ''
 assignees: ''
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+<!-- Please read the text in this edit field before filling it in.
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+Each of the questions and sections below start with multiple hash symbols (#). Place your answers and information on the blank line below each question.
+-->
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+### describe your feature request
 
-**Additional context**
-Add any other context or screenshots about the feature request here.
+### Describe the solution you'd like (optional)
+
+### Describe alternatives you've considered (optional)
+
+### Additional context (optional)
