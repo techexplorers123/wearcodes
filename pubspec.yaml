@@ -2,7 +2,7 @@ name: wearcodes
 description: "Store and view your QR/barcode codes easily on your smartwatch."
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.1+38
 
 environment:
   sdk: ^3.9.0
