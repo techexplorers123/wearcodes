@@ -3,7 +3,7 @@ name: Build and Release APK
 on:
   push:
     tags:
-      - 'v*.*.*' # Triggers on tags like v1.0.0, v1.2.3, etc.
+      - 'v*.*.*'
 
 jobs:
   build-and-release:
@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '11'
+          java-version: '17'
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -31,10 +31,10 @@ jobs:
 
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk wearcodes-release-${{ github.ref_name }}.apk
-
+        run: mv build/app/outputs/flutter-apk/app-release.apk.sha1 wearcodes-release-${{ github.ref_name }}.apk.sha1
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: wearcodes-release-${{ github.ref_name }}.apk
+          files: wearcodes-release-${{ github.ref_name }}.*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
