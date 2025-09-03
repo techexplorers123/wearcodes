@@ -30,8 +30,7 @@ jobs:
         run: flutter build apk --release
 
       - name: Rename APK
-        run: mv build/app/outputs/flutter-apk/app-release.apk wearcodes-release-${{ github.ref_name }}.apk
-        run: mv build/app/outputs/flutter-apk/app-release.apk.sha1 wearcodes-release-${{ github.ref_name }}.apk.sha1
+        run: mv build/app/outputs/flutter-apk/app-release.apk wearcodes-release-${{ github.ref_name }}.apk&&mv build/app/outputs/flutter-apk/app-release.apk.sha1 wearcodes-release-${{ github.ref_name }}.apk.sha1
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
