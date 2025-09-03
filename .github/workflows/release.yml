@@ -26,6 +26,20 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Update pubspec version
+        run: |
+          VERSION=${GITHUB_REF_NAME#v} # strips leading 'v'
+          BUILD_NUMBER=${GITHUB_RUN_NUMBER}
+          sed -i "s/^version: .*/version: ${VERSION}+${BUILD_NUMBER}/" pubspec.yaml
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add pubspec.yaml
+          git commit -m "Bump version to ${VERSION}+${BUILD_NUMBER}"
+          git push
+
       - name: Build release APK
         run: flutter build apk --release
 
