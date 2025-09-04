@@ -1,6 +1,6 @@
 name: wearcodes
 description: "Store and view your QR/barcode codes easily on your smartwatch."
-publish_to: 'none'
+publish_to: "none"
 
 version: 1.0.2+43
 
@@ -20,6 +20,7 @@ dependencies:
   wearable_rotary: ^2.0.2
   barcode_widget: ^2.0.4
   shared_preferences: ^2.5.3
+  wearthat: ^0.0.1
 
 dev_dependencies:
   rename_app: ^1.6.5
@@ -39,7 +40,6 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

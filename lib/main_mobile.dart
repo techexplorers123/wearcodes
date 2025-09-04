@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'shared/sync_bridge.dart';
 
 void main() {
   runApp(const MobileApp());
@@ -47,7 +46,6 @@ class _ManagerHomeState extends State<ManagerHome> {
                 final codes = <Map<String, String>>[
                   {'name': 'Sample', 'code': controller.text.trim()},
                 ];
-                await SyncBridge.sendCodes(codes);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Pushed to watch')),

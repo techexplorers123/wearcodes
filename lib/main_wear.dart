@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'shared/sync_bridge.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wear_plus/wear_plus.dart';
@@ -44,7 +43,6 @@ class _MainPageState extends State<MainPage> {
   List<Map<String, String>> codes = [];
   int selectedIndex = 0;
   late final StreamSubscription<RotaryEvent> _rotarySubscription;
-  StreamSubscription? _wearUpdatesSub;
   bool isClockwise = true;
   bool bounceFirst = false;
   bool bounceAdd = false;
@@ -53,35 +51,14 @@ class _MainPageState extends State<MainPage> {
     super.initState();
     _rotarySubscription = rotaryEvents.listen(_handleRotary);
     _loadCodes();
-    _wearUpdatesSub = SyncBridge.updates.listen((_) {
-      _loadCodes();
-    });
   }
 
   Future<void> _loadCodes() async {
     final prefs = await SharedPreferences.getInstance();
-
-    // Prefer old storage first (your existing list)
-    final storedList = prefs.getStringList('codes');
-
-    // Fallback to set written by the native service (if any)
-    final storedSet = prefs.getStringList('codes') == null
-        ? prefs.getStringList('codes') // no-op, keep API symmetry
-        : null;
-
-    // Try reading a StringSet written natively (through a side key)
-    // If you want a single key, you can switch both sides to one format later.
-    final storedSetAndroid = prefs.getStringList('codes_set');
-
-    List<String> raw = [];
-    if (storedList != null)
-      raw = storedList;
-    else if (storedSetAndroid != null)
-      raw = storedSetAndroid;
-
-    if (raw.isNotEmpty) {
+    final stored = prefs.getStringList('codes');
+    if (stored != null) {
       setState(() {
-        codes = raw
+        codes = stored
             .map((s) => Map<String, String>.from(jsonDecode(s)))
             .toList();
       });
@@ -286,7 +263,6 @@ class _MainPageState extends State<MainPage> {
   @override
   void dispose() {
     _rotarySubscription.cancel();
-    _wearUpdatesSub?.cancel();
     super.dispose();
   }
 
