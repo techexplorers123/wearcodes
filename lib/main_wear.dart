@@ -60,10 +60,28 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _loadCodes() async {
     final prefs = await SharedPreferences.getInstance();
-    final stored = prefs.getStringList('codes');
-    if (stored != null) {
+
+    // Prefer old storage first (your existing list)
+    final storedList = prefs.getStringList('codes');
+
+    // Fallback to set written by the native service (if any)
+    final storedSet = prefs.getStringList('codes') == null
+        ? prefs.getStringList('codes') // no-op, keep API symmetry
+        : null;
+
+    // Try reading a StringSet written natively (through a side key)
+    // If you want a single key, you can switch both sides to one format later.
+    final storedSetAndroid = prefs.getStringList('codes_set');
+
+    List<String> raw = [];
+    if (storedList != null)
+      raw = storedList;
+    else if (storedSetAndroid != null)
+      raw = storedSetAndroid;
+
+    if (raw.isNotEmpty) {
       setState(() {
-        codes = stored
+        codes = raw
             .map((s) => Map<String, String>.from(jsonDecode(s)))
             .toList();
       });
