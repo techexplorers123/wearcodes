@@ -8,11 +8,11 @@ import 'package:wearable_rotary/wearable_rotary.dart';
 import 'package:flutter/services.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const WearApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class WearApp extends StatelessWidget {
+  const WearApp({super.key});
 
   @override
   Widget build(BuildContext context) {
