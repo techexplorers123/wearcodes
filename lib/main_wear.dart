@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'shared/sync_bridge.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wear_plus/wear_plus.dart';
@@ -43,6 +44,7 @@ class _MainPageState extends State<MainPage> {
   List<Map<String, String>> codes = [];
   int selectedIndex = 0;
   late final StreamSubscription<RotaryEvent> _rotarySubscription;
+  StreamSubscription? _wearUpdatesSub;
   bool isClockwise = true;
   bool bounceFirst = false;
   bool bounceAdd = false;
@@ -51,6 +53,9 @@ class _MainPageState extends State<MainPage> {
     super.initState();
     _rotarySubscription = rotaryEvents.listen(_handleRotary);
     _loadCodes();
+    _wearUpdatesSub = SyncBridge.updates.listen((_) {
+      _loadCodes();
+    });
   }
 
   Future<void> _loadCodes() async {
@@ -263,6 +268,7 @@ class _MainPageState extends State<MainPage> {
   @override
   void dispose() {
     _rotarySubscription.cancel();
+    _wearUpdatesSub?.cancel();
     super.dispose();
   }
 

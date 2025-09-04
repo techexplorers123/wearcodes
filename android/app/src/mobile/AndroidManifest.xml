@@ -1,0 +1,13 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Optional: declare that a watch companion exists for Play linking -->
+    <!--
+    <application>
+        <meta-data
+            android:name="com.google.android.wearable.beta.app"
+            android:resource="@xml/wear_app_desc"/>
+    </application>
+    -->
+
+    <!-- Phone-side background listener not required; we only SEND from phone in this MVP -->
+</manifest>

@@ -27,7 +27,19 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
-
+    flavorDimensions "device"
+    productFlavors {
+        mobile {
+            dimension "device"
+            applicationIdSuffix ".mobile"
+            resValue "string", "app_name", "WearCodes Manager"
+        }
+        wearos {
+            dimension "device"
+            applicationIdSuffix ".wear"
+            resValue "string", "app_name", "wearcodes"
+        }
+    }
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.tech.wearcodes"
@@ -57,7 +69,10 @@ android {
                     }
     }
 }
-
+dependencies {
+    // Add Wearable Play Services (for Data Layer) for both flavors
+    implementation 'com.google.android.gms:play-services-wearable'
+}
 flutter {
     source = "../.."
 }
