@@ -238,6 +238,7 @@ class _MainPageState extends State<MainPage> {
               ),
               const SizedBox(height: 16),
               ElevatedButton(
+                autofocus: true,
                 onPressed: _handleAddCode,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
