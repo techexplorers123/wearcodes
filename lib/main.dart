@@ -5,7 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wear_plus/wear_plus.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:wearable_rotary/wearable_rotary.dart';
+import 'package:wearthat/wear.dart';
 import 'package:flutter/services.dart';
+import 'barcode_types.dart';
 
 void main() {
   runApp(const MyApp());
@@ -192,7 +194,9 @@ class _MainPageState extends State<MainPage> {
                     const SizedBox(height: 12),
                     BarcodeWidget(
                       data: codes[index]["code"] ?? "",
-                      barcode: Barcode.code39(),
+                      barcode:
+                          barcodeTypes[codes[index]["type"]] ??
+                          Barcode.code39(),
                       width: 180,
                       height: 60,
                       color: Colors.white,
@@ -315,6 +319,7 @@ class AddCodePage extends StatefulWidget {
 class _AddCodePageState extends State<AddCodePage> {
   final nameController = TextEditingController();
   final codeController = TextEditingController();
+  String selectedType = "";
 
   @override
   void dispose() {
@@ -348,6 +353,25 @@ class _AddCodePageState extends State<AddCodePage> {
                 signed: false,
               ),
             ),
+            DropdownButton<String>(
+              value: selectedType,
+              dropdownColor: Colors.black,
+              iconEnabledColor: Colors.white,
+              items: barcodeTypes.keys.map((type) {
+                return DropdownMenuItem(
+                  value: type,
+                  child: Text(
+                    type,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedType = value!;
+                });
+              },
+            ),
             const SizedBox(height: 10),
             AppButton(
               label: "Add",
@@ -357,6 +381,7 @@ class _AddCodePageState extends State<AddCodePage> {
                   widget.onAdd({
                     "name": nameController.text.trim(),
                     "code": codeController.text.trim(),
+                    "type": selectedType.trim(),
                   });
                   Navigator.pop(context);
                 }
