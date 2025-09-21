@@ -40,7 +40,7 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
-            resValue = "string", "app_name", "Wearcodes Debug"
+            resValue("string", "app_name", "Wearcodes Debug")
         }
         release {
             signingConfig = signingConfigs.create("release") {

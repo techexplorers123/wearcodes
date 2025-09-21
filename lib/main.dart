@@ -319,7 +319,7 @@ class AddCodePage extends StatefulWidget {
 class _AddCodePageState extends State<AddCodePage> {
   final nameController = TextEditingController();
   final codeController = TextEditingController();
-  String selectedType = "";
+  String selectedType = barcodeTypes.keys.first;
 
   @override
   void dispose() {
@@ -342,20 +342,11 @@ class _AddCodePageState extends State<AddCodePage> {
               autofocus: false,
               maxLength: 20,
             ),
-            // const SizedBox(height: 10),
-            TextField(
-              controller: codeController,
-              decoration: InputDecoration(hintText: "Enter code"),
-              autofocus: false,
-              maxLength: 20,
-              keyboardType: TextInputType.numberWithOptions(
-                decimal: false,
-                signed: false,
-              ),
-            ),
             DropdownButton<String>(
               value: selectedType,
               dropdownColor: Colors.black,
+              hint: Text("code type"),
+              barrierDismissible: false,
               iconEnabledColor: Colors.white,
               items: barcodeTypes.keys.map((type) {
                 return DropdownMenuItem(
@@ -372,7 +363,11 @@ class _AddCodePageState extends State<AddCodePage> {
                 });
               },
             ),
-            const SizedBox(height: 10),
+            TextField(
+              controller: codeController,
+              decoration: InputDecoration(hintText: "Enter code"),
+              autofocus: false,
+            ),
             AppButton(
               label: "Add",
               backgroundColor: Colors.blue,
@@ -387,12 +382,6 @@ class _AddCodePageState extends State<AddCodePage> {
                 }
               },
             ),
-            // const SizedBox(height: 5),
-            // AppButton(
-            //   label: "Cancel",
-            //   backgroundColor: Colors.grey[800]!,
-            //   onPressed: () => Navigator.pop(context),
-            // ),
           ],
         ),
       ),
