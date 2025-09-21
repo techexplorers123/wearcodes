@@ -38,6 +38,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            resValue = "string", "app_name", "Wearcodes Debug"
+        }
         release {
             signingConfig = signingConfigs.create("release") {
                 storeFile = keystoreProperties["storeFile"]?.let { file(it) }
