@@ -49,9 +49,12 @@ jobs:
 
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk wearcodes-release-${{ github.ref_name }}.apk&&mv build/app/outputs/flutter-apk/app-release.apk.sha1 wearcodes-release-${{ github.ref_name }}.apk.sha1
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+      - name: Create Release & Upload APK
+        uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          generate_release_notes: true
           files: wearcodes-release-${{ github.ref_name }}.*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
