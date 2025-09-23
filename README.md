@@ -11,7 +11,7 @@ _A lightweight Flutter app that turns your smartwatch into a digital wallet for 
 ## Features
 
 - Store Multiple Codes: Add and manage a list of barcodes with custom names.
-- Clear Barcode Display: Crisp Code 39 barcodes optimized for smartwatch screens.
+- Clear Barcode Display: Crisp qr /  barcodes optimized for smartwatch screens.
 - Intuitive Navigation: Seamlessly cycle through your saved codes using the watch's rotary input (bezel or crown).
 - On-Device Management: Add new codes or delete existing ones directly from the watch.
 - Haptic Feedback: Physical confirmation for interactions like scrolling and adding codes.
