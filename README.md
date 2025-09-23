@@ -89,7 +89,7 @@ _A lightweight Flutter app that turns your smartwatch into a digital wallet for 
 
 ## To-Do (Planned Features)
 
-- [ ] Support more barcode formats (QR Code, Code 128, ...).
+- [x] Support more barcode formats (QR Code, Code 128, ...).
 - [ ] Reordering of saved codes.
 - [ ] Edit existing code name/data.
 - [ ] Theming & UI improvements.
